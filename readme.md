@@ -4,8 +4,7 @@ Feel free to use it yourself, but it's probably broken for Chrome.
 I might look into publishing it to the add-on store.
 
 
-### License
+## 🙏 Acknowledgments
 
-The MIT License
+Big thanks to [@tholman](https://github.com/tholman) for the original project inspiration and codebase. This project is a fork of their amazing work.
 
-Copyright (C) 2017 ~ [Tim Holman](http://tholman.com) ~ timothy.w.holman@gmail.com

@@ -1,4 +1,17 @@
-// Parses the top sites from the chrome result, and saves them to our data format
+// Parses the top sites from the browser result, and saves them to our data format
+function hashCode(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return hash;
+}
+
+function intToRGB(i) {
+  const c = (i & 0x00FFFFFF).toString(16).toUpperCase();
+  return "00000".substring(0, 6 - c.length) + c;
+}
+
 function parseTopSites(sites) {
   var siteList = [];
   for (var site of sites) {
@@ -14,7 +27,7 @@ function parseTopSites(sites) {
       title: site.title,
       character: site.title.substring(0, 1),
       url: site.url,
-      color: "#eeeeee",
+      color: `#${intToRGB(hashCode(site.url))}`,
     });
   }
 
@@ -22,42 +35,57 @@ function parseTopSites(sites) {
 }
 
 function ensureValidData(sites) {
-  let checkedSites = sites;
+  let checkedSites = sites || [];  // Ensure sites is an array
 
   for (var i = 0; i < 9; i++) {
-    if (!sites[i]) {
-      sites.push({
+    if (!checkedSites[i]) {
+      checkedSites.push({
         title: "Configure Me",
         character: "A",
         url: "http://configure-me",
-        color: "#eeeeee",
+        color: `#${intToRGB(hashCode("http://configure-me"))}`,
       });
-    } else if (!sites[i].title) {
-      sites[i].title = "Configure Me";
-      sites[i].character = "A";
+    } else if (!checkedSites[i].title) {
+      checkedSites[i].title = "Configure Me";
+      checkedSites[i].character = "A";
     }
   }
 
   return checkedSites;
 }
 
-function getTopSites(resolve) {
-  // Check if they have the data in storage
-  chrome.storage.sync.get(["whymt-topSites"], (results) => {
-    if (Object.keys(results).length == 0) {
-      chrome.topSites.get((results) => {
-        const siteList = ensureValidData(parseTopSites(results.slice(0, 9)));
-        saveTopSites(siteList);
-        resolve(siteList);
-      });
-    } else {
-      resolve(ensureValidData(results["whymt-topSites"]));
+async function getTopSites() {
+  let results;
+  try {
+    results = await browser.storage.sync.get("whymt-topSites");
+  } catch (e) {
+    console.error("Error accessing storage:", e);
+    results = {};
+  }
+
+  if (!results["whymt-topSites"] || results["whymt-topSites"].length === 0) {
+    let topResults;
+    try {
+      topResults = await browser.topSites.get();
+    } catch (e) {
+      console.error("Error accessing topSites:", e);
+      topResults = [];
     }
-  });
+
+    const siteList = ensureValidData(parseTopSites(topResults.slice(0, 9)));
+    await saveTopSites(siteList);
+    return siteList;
+  } else {
+    return ensureValidData(results["whymt-topSites"]);
+  }
 }
 
-function saveTopSites(siteList) {
-  chrome.storage.sync.set({ "whymt-topSites": siteList });
+async function saveTopSites(siteList) {
+  try {
+    await browser.storage.sync.set({ "whymt-topSites": siteList });
+  } catch (e) {
+    console.error("Error saving to storage:", e);
+  }
 }
 
 export default {

@@ -20,7 +20,7 @@ import siteTiles from "./components/siteTiles.vue";
 import config from "./components/config.vue";
 import configButton from "./components/configButton.vue";
 
-import { ref, reactive, unRef, toRefs, onBeforeMount } from "vue";
+import { reactive, toRefs, onBeforeMount } from "vue";
 import API from "./utils/api.js";
 
 export default {
@@ -31,9 +31,7 @@ export default {
     });
 
     onBeforeMount(async () => {
-      state.sites = await new Promise((resolve) => {
-        API.getTopSites(resolve);
-      });
+      state.sites = await API.getTopSites();
     });
 
     const setConfigOpen = (value) => {

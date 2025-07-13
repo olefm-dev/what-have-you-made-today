@@ -1,6 +1,7 @@
 {
+  "manifest_version": 3,
   "name": "New Tab - What have you made today?",
-  "description": "Chrome small motivating extension for your new tabs.",
+  "description": "Motivating new tab extension for Firefox.",
   "short_name": "WHYMT - New Tab",
   "version": "1.0.6",
   "author": "Tim Holman",
@@ -8,12 +9,16 @@
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
-  "permissions": ["topSites", "storage"],
-  "applications": {
+  "permissions": [
+    "topSites",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "browser_specific_settings": {
     "gecko": {
-      "id": "@what-have-you-made-today",
-      "strict_min_version": "54.0"
+      "id": "whymt@tholman.com"
     }
-  },
-  "manifest_version": 2
+  }
 }

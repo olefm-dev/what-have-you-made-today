@@ -1,14 +1,17 @@
 const path = require("path");
 const { VueLoaderPlugin } = require("vue-loader");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = (env = {}) => ({
+  target: "web",
   mode: env.prod ? "production" : "development",
-  devtool: env.prod ? "source-map" : "cheap-module-eval-source-map",
+  devtool: env.prod ? false : "cheap-module-source-map",
   entry: path.resolve(__dirname, "./src/main.js"),
   output: {
+    devtoolModuleFilenameTemplate: '[absolute-resource-path]',
     path: path.resolve(__dirname, "./dist"),
-    publicPath: "/dist/",
+    publicPath: "",
   },
   resolve: {
     alias: {
@@ -26,18 +29,19 @@ module.exports = (env = {}) => ({
         use: "vue-loader",
       },
       {
-        test: /\.png$/,
-        use: {
-          loader: "url-loader",
-          options: { limit: 8192 },
-        },
+        test: /\.(png|jpe?g|gif|svg)$/i,
+        type: 'asset',
+        parser: {
+          dataUrlCondition: {
+            maxSize: 8 * 1024 // 8kb
+          }
+        }
       },
       {
         test: /\.css$/,
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
-            options: { hmr: !env.prod },
           },
           "css-loader",
         ],
@@ -49,12 +53,24 @@ module.exports = (env = {}) => ({
     new MiniCssExtractPlugin({
       filename: "[name].css",
     }),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, "./index.html"),
+      inject: 'body',
+    }),
   ],
+  optimization: {
+    minimize: false
+  },
   devServer: {
-    inline: true,
     hot: true,
-    stats: "minimal",
-    contentBase: __dirname,
-    overlay: true,
+    static: {
+      directory: __dirname,
+    },
+    client: {
+      overlay: true,
+    },
+    devMiddleware: {
+      stats: 'minimal',
+    },
   },
 });
